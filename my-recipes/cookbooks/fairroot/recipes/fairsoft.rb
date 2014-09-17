@@ -13,24 +13,16 @@ directory node[:fairsoft][:dir]+"/"+node[:fairsoft][:version] do
   action :create
 end
 
-git "/home/vagrant/fairsoft" do
+git node[:fairsoft][:src_dir]+ "/fairsoft" do
   repository "https://github.com/FairRootGroup/FairSoft"
   revision "tags/" + node[:fairsoft][:version]
-  action :sync
+  action :nothing
   user "vagrant"
   group "vagrant"
 end
 
-template "fairsoft.sh" do
-  path "/etc/profile.d/fairsoft.sh"
-  source "fairsoft.sh.erb"
-  owner "root"
-  group "root"
-  mode "0644"
-end
-
 template "config.input" do
-  path "/home/vagrant/fairsoft/config.input"
+  path node[:fairsoft][:src_dir]+"/fairsoft/config.input"
   source "config.input.erb"
   owner "vagrant"
   group "vagrant"
@@ -39,10 +31,17 @@ end
 
 bash "install_fairsoft" do
   user "vagrant"
-  cwd "/home/vagrant/fairsoft"
-  timeout 7200
+  cwd node[:fairsoft][:src_dir]+"/fairsoft"
+  timeout 10800
   code <<-EOH
     ./configure.sh < config.input
   EOH
 end
 
+template "fairsoft.sh" do
+    path "/etc/profile.d/fairsoft.sh"
+    source "fairsoft.sh.erb"
+    owner "root"
+    group "root"
+    mode "0644"
+end
