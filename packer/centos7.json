@@ -1,0 +1,49 @@
+{
+  "builders": [
+    {
+      "name": "centos7",
+      "type": "virtualbox-iso",
+      "headless": "false",
+      "guest_os_type": "RedHat_64",
+      "iso_url": "http://ftp.tu-chemnitz.de/pub/linux/centos/7.0.1406/isos/x86_64/CentOS-7.0-1406-x86_64-Minimal.iso",
+      "iso_checksum": "e3afe3f1121d69c40cc23f0bafa05e5d",
+      "iso_checksum_type": "md5",
+      "http_directory": ".",
+      "boot_command": [
+        "<esc>",
+        " linux ks=http://{{.HTTPIP}}:{{.HTTPPort}}/centos7.ks.cfg",
+        "<enter>",
+        "<wait>"
+      ],
+      "ssh_username": "root",
+      "ssh_password": "vagrant",
+      "ssh_wait_timeout": "6000s",
+      "shutdown_command": "echo 'shutdown -h now' > shutdown.sh; echo 'vagrant'|sudo -S sh 'shutdown.sh'",
+      "guest_additions_path": "VBoxGuestAdditions.iso",
+      "disk_size": "10000",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "2048" ],
+        ["modifyvm", "{{.Name}}", "--cpus", 2 ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": ["yum -y update", "shutdown -r -t 1", "systemctl stop sshd.service", "sleep 120"]
+    },
+    {
+      "type": "shell",
+      "inline": ["yum -y install gcc ruby rubygems ruby-devel", "gem install chef --no-ri --no-rdoc", "echo 'if [ -n $PATH ]; then export PATH=/usr/local/bin:$PATH; else export PATH=/usr/local/bin; fi' > /etc/profile.d/localPath.sh"]
+    },
+    {
+      "type": "shell",
+      "inline": ["yum -y install gcc kernel-devel bzip2", "mount -o loop VBoxGuestAdditions.iso /media", "/media/VBoxLinuxAdditions.run", "umount /media", "rm VBoxGuestAdditions.iso"]
+    },
+    {
+      "type": "shell",
+      "inline": ["yum -y install wget", "adduser -G wheel -p $6$fXleFhV8$B81P4qJZi4V.BfeGtUZpo7euQswjV5Ge/Qpv8fJHcuOkzvxcziaeISvqclCqLATGhDmo0HJT8JlpvZDZCVvFy/ vagrant", "mkdir -p /home/vagrant/.ssh", "wget https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys", "chown -R vagrant:vagrant /home/vagrant/.ssh", "chmod 700 /home/vagrant/.ssh", "chmod 600 /home/vagrant/.ssh/*", "echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers", "echo 'Defaults !requiretty' >> /etc/sudoers"]
+    }
+  ],
+  "post-processors": ["vagrant"]
+}
