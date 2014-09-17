@@ -16,7 +16,7 @@ end
 git node[:fairsoft][:src_dir]+ "/fairsoft" do
   repository "https://github.com/FairRootGroup/FairSoft"
   revision "tags/" + node[:fairsoft][:version]
-  action :nothing
+  action :sync
   user "vagrant"
   group "vagrant"
 end
