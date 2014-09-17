@@ -7,3 +7,8 @@ dev_packages.each do|p|
     action :install
   end
 end
+
+# install also xauth for ssh x forwarding
+package "xauth" do
+  action :install
+end
